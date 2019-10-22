@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from prettytable import PrettyTable
 from random import randint
+from holidays import Brazil
 
 parser = argparse.ArgumentParser(
     prog='magicpoint.py',
@@ -14,6 +15,8 @@ parser.add_argument(
     '-m', '--month', type=int, help='an integer for the month')
 parser.add_argument(
     '-y', '--year', type=int, help='an integer for the year')
+parser.add_argument(
+    '-s', '--state', type=str, help='two characters for the brazilian state')
 parse = parser.parse_args()
 
 point_table = PrettyTable()
@@ -26,6 +29,9 @@ point_table.field_names = [
     "JUSTIFICATIVA"
 ]
 
+holiday_list = Brazil(state=parse.state)
+holiday_list._populate(parse.year)
+
 
 def get_magic_point(month, year):
     date = datetime(day=1, month=month, year=year)
@@ -37,8 +43,14 @@ def get_magic_point(month, year):
         if date.weekday() == 5 or date.weekday() == 6:
             point_table.add_row([
                 date.strftime(date_format),
-                "", "", "", "",
+                "-"*5, "-"*5, "-"*5, "-"*5,
                 "FOLGA"
+            ])
+        elif date.date() in holiday_list.keys():
+            point_table.add_row([
+                date.strftime(date_format),
+                "-"*5, "-"*5, "-"*5, "-"*5,
+                "FERIADO"
             ])
         else:
             entrada = datetime(
